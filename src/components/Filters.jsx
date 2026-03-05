@@ -14,7 +14,7 @@ const Filters = ({
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
-    fetch("https://dummyjson.com/products/categories")
+    fetch("/api/products/categories")
       .then((r) => r.json())
       .then(setCategories)
       .catch(() => setCategories([]));

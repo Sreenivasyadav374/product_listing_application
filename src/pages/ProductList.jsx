@@ -44,8 +44,8 @@ const ProductList = () => {
     setError(null);
 
     const url = selectedCategory
-      ? `https://dummyjson.com/products/category/${selectedCategory}?limit=100`
-      : `https://dummyjson.com/products?limit=100`;
+      ? `/api/products/category/${selectedCategory}?limit=100`
+      : `/api/products?limit=100`;
 
     fetch(url)
       .then((r) => {
