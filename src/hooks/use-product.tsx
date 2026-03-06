@@ -1,26 +1,16 @@
-import { useEffect, useState } from "react";
 import { getProductById } from "../services/productService";
+import { useFetchWithRetry } from "./useFetchWithRetry";
 
 export const useProduct = (id) => {
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { data, loading, error, retrying } = useFetchWithRetry(
+    (setRetrying) => getProductById(id, setRetrying),
+    [id]
+  );
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        setLoading(true);
-        const data = await getProductById(id);
-        setProduct(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProduct();
-  }, [id]);
-
-  return { product, loading, error };
+  return {
+    product: data,
+    loading,
+    error,
+    retrying,
+  };
 };

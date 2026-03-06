@@ -1,9 +1,13 @@
-export const getProductById = async (id) => {
-  const response = await fetch(`/api/products/${id}`);
+import { fetchWithRetry } from "../lib/utils";
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch product");
-  }
+export const getProductById = async (id,onRetry) => {
+  return fetchWithRetry(`/api/products/${id}`,{},3,1000,onRetry);
+};
 
-  return response.json();
+export const fetchProducts = async (category, onRetry) => {
+  const url = category
+    ? `/api/products/category/${category}?limit=100`
+    : `/api/products?limit=100`;
+
+  return fetchWithRetry(url, {}, 3, 1000, onRetry);
 };
