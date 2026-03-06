@@ -1,9 +1,13 @@
-import { useState, useEffect, useMemo } from "react";
+import {useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import Filters from "../components/Filters";
 import Pagination from "../components/Pagination";
-import {getUniqueBrands} from '../lib/utils'
+import { getUniqueBrands, filterProducts } from "../lib/utils";
+import { usePagination } from "../hooks/usePagination";
+import Loader from "../components/Loader";
+import ErrorState from "../components/ErrorState";
+import { useProducts } from "../hooks/useProducts";
 
 const LIMIT = 12;
 
@@ -18,15 +22,22 @@ const ProductList = () => {
     : [];
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
 
-  const [allProducts, setAllProducts] = useState([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const {
+    products: allProducts,
+    loading,
+    error,
+    total,
+    retrying,
+  } = useProducts(selectedCategory);
 
   const updateParams = (updates) => {
     const params = new URLSearchParams(searchParams);
     Object.entries(updates).forEach(([key, value]) => {
-      if (value === "" || value === null || (Array.isArray(value) && value.length === 0)) {
+      if (
+        value === "" ||
+        value === null ||
+        (Array.isArray(value) && value.length === 0)
+      ) {
         params.delete(key);
       } else {
         params.set(key, Array.isArray(value) ? value.join(",") : value);
@@ -39,42 +50,16 @@ const ProductList = () => {
     updateParams({ [key]: value, page: "1" });
   };
 
-  useEffect(() => {
-    setLoading(true);
-    setError(null);
-
-    const url = selectedCategory
-      ? `/api/products/category/${selectedCategory}?limit=100`
-      : `/api/products?limit=100`;
-
-    fetch(url)
-      .then((r) => {
-        if (!r.ok) throw new Error("Failed to fetch products");
-        return r.json();
-      })
-      .then((data) => {
-        setAllProducts(data.products || []);
-        setTotal(data.total || 0);
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [selectedCategory]);
-
   const brands = getUniqueBrands(allProducts);
 
   const filteredProducts = useMemo(() => {
-    return allProducts.filter((p) => {
-      if (minPrice && p.price < Number(minPrice)) return false;
-      if (maxPrice && p.price > Number(maxPrice)) return false;
-      if (selectedBrands.length > 0 && !selectedBrands.includes(p.brand)) return false;
-      return true;
-    });
+    return filterProducts(allProducts, minPrice, maxPrice, selectedBrands);
   }, [allProducts, minPrice, maxPrice, selectedBrands]);
 
-  const totalPages = Math.ceil(filteredProducts.length / LIMIT);
-  const paginatedProducts = filteredProducts.slice(
-    (currentPage - 1) * LIMIT,
-    currentPage * LIMIT
+  const { paginatedItems: paginatedProducts, totalPages } = usePagination(
+    filteredProducts,
+    currentPage,
+    LIMIT,
   );
 
   const currentSearchParams = searchParams.toString();
@@ -101,25 +86,15 @@ const ProductList = () => {
         </div>
 
         <div className="flex-1">
-          {loading && (
-            <div className="flex items-center justify-center py-20">
-              <div className="spinner" />
-            </div>
-          )}
-
-          {error && (
-            <div className="text-center py-20 text-destructive">
-              <p className="font-medium">Error: {error}</p>
-            </div>
-          )}
-
-          {!loading && !error && paginatedProducts.length === 0 && (
+          {error ? (
+            <ErrorState message={error} />
+          ) : loading ? (
+            <Loader text={retrying ? "Server busy, retrying..." : undefined} />
+          ) : paginatedProducts.length === 0 ? (
             <div className="text-center py-20 text-muted-foreground">
               No products found.
             </div>
-          )}
-
-          {!loading && !error && paginatedProducts.length > 0 && (
+          ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {paginatedProducts.map((product) => (

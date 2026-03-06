@@ -9,10 +9,16 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const { product, loading, error } = useProduct(id);
+  const { product, loading, error, retrying } = useProduct(id);
+
+  if (loading && retrying) return <Loader text="Server busy, retrying..." />;
 
   if (loading) return <Loader />;
+
   if (error) return <ErrorState message={error} />;
+  if (!product) {
+    return <ErrorState message="Product not found." />;
+  }
 
   return (
     <div className="min-h-screen bg-background">
