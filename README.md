@@ -179,19 +179,13 @@ src
 git clone https://github.com/Sreenivasyadav374/product_listing_application
 ```
 
-### 2. Navigate to the project
-
-```bash
-cd project-folder
-```
-
-### 3. Install dependencies
+### 2. Install dependencies
 
 ```bash
 npm install
 ```
 
-### 4. Run the development server
+### 3. Run the development server
 
 ```bash
 npm run dev
@@ -205,7 +199,7 @@ http://localhost:8080
 
 ---
 
-### 5. Build for production
+### 4. Build for production
 
 ```bash
 npm run build
@@ -213,7 +207,7 @@ npm run build
 
 ---
 
-### 6. Preview production build
+### 5. Preview production build
 
 ```bash
 npm run preview
