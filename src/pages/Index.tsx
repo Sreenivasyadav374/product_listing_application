@@ -3,7 +3,7 @@ const Index = () => {
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="text-center">
         <h1 className="mb-4 text-4xl font-bold">Unable to load the APP</h1>
-        <p className="text-xl text-muted-foreground">There's been some issue...</p>
+        <p className="text-xl text-muted-foreground">Please try again later...</p>
       </div>
     </div>
   );

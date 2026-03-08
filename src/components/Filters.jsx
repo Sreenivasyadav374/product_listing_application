@@ -13,12 +13,21 @@ const Filters = ({
 }) => {
   const [categories, setCategories] = useState([]);
 
-  useEffect(() => {
-    fetch("https://dummyjson.com/products/categories")
-      .then((r) => r.json())
-      .then(setCategories)
-      .catch(() => setCategories([]));
-  }, []);
+useEffect(() => {
+  fetch("/api/products/categories")
+    .then((r) => {
+      if (!r.ok) throw new Error("Failed to fetch categories");
+      return r.json();
+    })
+    .then((data) => {
+      if (Array.isArray(data)) {
+        setCategories(data);
+      } else {
+        setCategories([]);
+      }
+    })
+    .catch(() => setCategories([]));
+}, []);
 
   const toggleBrand = (brand) => {
     onBrandsChange(
@@ -38,7 +47,7 @@ const Filters = ({
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
         >
           <option value="">All Categories</option>
-          {categories.map((cat) => (
+          {categories?.map((cat) => (
             <option key={cat.slug} value={cat.slug}>
               {cat.name}
             </option>
